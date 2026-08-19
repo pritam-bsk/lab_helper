@@ -5,7 +5,7 @@ const fs = require('node:fs');
 
 let code = '';
 
-fs.readFile('code.txt', 'utf8', (err, data) => {
+fs.readFile('code.cpp', 'utf8', (err, data) => {
     if (err) {
         console.error('Error reading file:', err);
         return;
