@@ -19,4 +19,4 @@ app.post('/', (req, res) => {
     res.send(code);
 });
 
-app.listen(3000, () => console.log('Express server running on port 3000'));
+module.exports = app;
