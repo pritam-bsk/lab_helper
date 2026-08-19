@@ -16,7 +16,7 @@ fs.readFile('code.txt', 'utf8', (err, data) => {
 
 
 app.post('/', (req, res) => {
-    res.send(code);
+    res.send(code); 
 });
 
 app.listen(3000, () => console.log('Express server running on port 3000'));
