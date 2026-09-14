@@ -1,446 +1,491 @@
-#include <iostream>
-using namespace std;
+#include <stdio.h>
 
-class ExamRecord {
-    int *marks, n, id;
+#define SIZE 10
 
-public:
-    ExamRecord(int i, int s) {
-        id = i;
-        n = s;
-        marks = new int[n];
-    }
-
-    ~ExamRecord() {
-        delete[] marks;
-    }
-
-    void input() {
-        cout << "Enter marks: ";
-        for (int *p = marks; p < marks + n; p++)
-            cin >> *p;
-    }
-
-    void display() {
-        cout << "Student " << id << ": ";
-        for (int *p = marks; p < marks + n; p++)
-            cout << *p << " ";
-        cout << "\n";
-    }
-
-    int calculateResult() {
-        int sum = 0;
-        for (int *p = marks; p < marks + n; p++)
-            sum += *p;
-        return sum;
-    }
-
-    void calculateResult(int maxMarks, int &total, float &percentage) {
-        total = calculateResult();
-        percentage = (float)total / maxMarks * 100;
-    }
-
-    ExamRecord operator+(ExamRecord &x) {
-        ExamRecord temp(0, n);
-        for (int i = 0; i < n; i++)
-            temp.marks[i] = marks[i] + x.marks[i];
-        return temp;
-    }
-
-    friend void findTopper(ExamRecord **, int);
-};
-
-void findTopper(ExamRecord **a, int n) {
-    int pos = 0;
-    for (int i = 1; i < n; i++)
-        if (a[i]->calculateResult() > a[pos]->calculateResult())
-            pos = i;
-
-    cout << "Topper: Student " << a[pos]->id << "\n";
+int hash(int key) {
+    return key % SIZE;
 }
 
-int main() {
-    int n, s;
-    cout << "Enter students and subjects: ";
-    cin >> n >> s;
+void insert(int a[], int key) {
+    int i, index = hash(key);
 
-    ExamRecord **a = new ExamRecord*[n];
-
-    for (int i = 0; i < n; i++) {
-        a[i] = new ExamRecord(i + 1, s);
-        a[i]->input();
-    }
-
-    for (int i = 0; i < n; i++) {
-        a[i]->display();
-        cout << "Total: " << a[i]->calculateResult() << "\n";
-        int total;
-        float percentage;
-        a[i]->calculateResult(s * 100, total, percentage);
-        cout << "Percentage: " << percentage << "%\n";
-    }
-
-    findTopper(a, n);
-
-    if (n >= 2) {
-        ExamRecord c = *a[0] + *a[1];
-        cout << "Combined marks of Student 1 and 2:\n";
-        c.display();
-    }
-
-    for (int i = 0; i < n; i++)
-        delete a[i];
-    delete[] a;
-}
-
-
-#include <iostream>
-using namespace std;
-
-class Warehouse {
-    int n;
-    int *qty;
-    float *price;
-
-public:
-    Warehouse(int x) {
-        n = x;
-        qty = new int[n];
-        price = new float[n];
-    }
-
-    ~Warehouse() {
-        delete[] qty;
-        delete[] price;
-    }
-
-    void input() {
-        for (int i = 0; i < n; i++)
-            cin >> *(qty + i) >> *(price + i);
-    }
-
-    float calculateValue(int i) {
-        return *(qty + i) * *(price + i);
-    }
-
-    float calculateValue() {
-        float total = 0;
-        for (int i = 0; i < n; i++)
-            total += calculateValue(i);
-        return total;
-    }
-
-    Warehouse operator+(Warehouse &w) {
-        Warehouse temp(n);
-        for (int i = 0; i < n; i++) {
-            temp.qty[i] = qty[i] + w.qty[i];
-            temp.price[i] = price[i];
+    for (i = 0; i < SIZE; i++) {
+        int pos = (index + i) % SIZE;
+        if (a[pos] == -1) {
+            a[pos] = key;
+            return;
         }
-        return temp;
     }
 
-    friend void compareStock(Warehouse &, Warehouse &);
-};
+    printf("Hash table is full\n");
+}
 
-void compareStock(Warehouse &a, Warehouse &b) {
-    if (a.calculateValue() > b.calculateValue())
-        cout << "Warehouse 1 has greater value\n";
-    else if (a.calculateValue() < b.calculateValue())
-        cout << "Warehouse 2 has greater value\n";
-    else
-        cout << "Both warehouses have equal value\n";
+void display(int a[]) {
+    int i;
+    for (i = 0; i < SIZE; i++)
+        printf("%d : %d\n", i, a[i]);
 }
 
 int main() {
-    int n;
-    cout << "Enter number of products: ";
-    cin >> n;
+    int a[SIZE], n, key, i;
 
-    Warehouse *w1 = new Warehouse(n);
-    Warehouse *w2 = new Warehouse(n);
+    for (i = 0; i < SIZE; i++)
+        a[i] = -1;
 
-    cout << "Enter quantity and price for Warehouse 1:\n";
-    w1->input();
+    printf("Enter number of elements: ");
+    scanf("%d", &n);
 
-    cout << "Enter quantity and price for Warehouse 2:\n";
-    w2->input();
+    printf("Enter elements: ");
+    for (i = 0; i < n; i++) {
+        scanf("%d", &key);
+        insert(a, key);
+    }
 
-    cout << "Warehouse 1 total value: " << w1->calculateValue() << "\n";
-    cout << "Warehouse 2 total value: " << w2->calculateValue() << "\n";
+    printf("\nHash Table:\n");
+    display(a);
 
-    compareStock(*w1, *w2);
-
-    Warehouse w3 = *w1 + *w2;
-    cout << "Combined warehouse value: " << w3.calculateValue() << "\n";
-
-    delete w1;
-    delete w2;
+    return 0;
 }
 
+Sample Input
 
-#include <iostream>
-using namespace std;
+Enter number of elements: 6
+Enter elements: 25 32 42 17 52 62
 
-class VehicleFleet {
-    int id;
-    float *fuel;
+Sample Output
 
-public:
-    VehicleFleet(int x) {
-        id = x;
-        fuel = new float[5];
-        cout << "Constructor: Vehicle " << id << "\n";
-    }
+Hash Table:
+0 : -1
+1 : -1
+2 : 32
+3 : 42
+4 : 52
+5 : 25
+6 : 62
+7 : 17
+8 : -1
+9 : -1
 
-    ~VehicleFleet() {
-        cout << "Destructor: Vehicle " << id << "\n";
-        delete[] fuel;
-    }
+---
 
-    void input() {
-        for (float *p = fuel; p < fuel + 5; p++)
-            cin >> *p;
-    }
+2. Matrix Multiplication Using Divide and Conquer
 
-    float calculateFuel() {
-        float s = 0;
-        for (float *p = fuel; p < fuel + 5; p++)
-            s += *p;
-        return s;
-    }
+Normally, matrix multiplication uses three nested loops.
 
-    float calculateFuel(int a, int b) {
-        float s = 0;
-        for (int i = a - 1; i < b; i++)
-            s += *(fuel + i);
-        return s;
-    }
+For two "n × n" matrices:
 
-    VehicleFleet operator+(VehicleFleet &v) {
-        VehicleFleet temp(0);
-        for (int i = 0; i < 5; i++)
-            temp.fuel[i] = fuel[i] + v.fuel[i];
-        return temp;
-    }
+[
+C[i][j] = \sum_{k=0}^{n-1} A[i][k]B[k][j]
+]
 
-    friend void compareVehicles(VehicleFleet &, VehicleFleet &);
-};
+The normal algorithm has:
 
-void compareVehicles(VehicleFleet &a, VehicleFleet &b) {
-    if (a.calculateFuel() > b.calculateFuel())
-        cout << "Vehicle 1 consumed more fuel\n";
-    else if (a.calculateFuel() < b.calculateFuel())
-        cout << "Vehicle 2 consumed more fuel\n";
-    else
-        cout << "Both consumed equal fuel\n";
+[
+T(n)=O(n^3)
+]
+
+Divide and Conquer divides each matrix into four submatrices.
+
+Suppose:
+
+[
+A =
+\begin{bmatrix}
+A_{11} & A_{12}\
+A_{21} & A_{22}
+\end{bmatrix}
+]
+
+and
+
+[
+B =
+\begin{bmatrix}
+B_{11} & B_{12}\
+B_{21} & B_{22}
+\end{bmatrix}
+]
+
+Then:
+
+[
+C_{11}=A_{11}B_{11}+A_{12}B_{21}
+]
+
+[
+C_{12}=A_{11}B_{12}+A_{12}B_{22}
+]
+
+[
+C_{21}=A_{21}B_{11}+A_{22}B_{21}
+]
+
+[
+C_{22}=A_{21}B_{12}+A_{22}B_{22}
+]
+
+The process continues recursively until the matrix becomes "1 × 1".
+
+---
+
+Divide and Conquer Recurrence
+
+For ordinary divide-and-conquer matrix multiplication:
+
+[
+T(n)=8T(n/2)+O(n^2)
+]
+
+Therefore:
+
+[
+T(n)=O(n^3)
+]
+
+So ordinary divide-and-conquer matrix multiplication does not improve the asymptotic complexity over the standard algorithm.
+
+---
+
+C Program: Matrix Multiplication Using Divide and Conquer
+
+This version assumes "n" is a power of 2, such as "2, 4, 8, 16...".
+
+:::writing{variant="document" id="74106" title="Matrix Multiplication Using Divide and Conquer in C"}
+
+#include <stdio.h>
+
+#define MAX 64
+
+void add(int A[MAX][MAX], int B[MAX][MAX], int C[MAX][MAX], int n) {
+    int i, j;
+    for (i = 0; i < n; i++)
+        for (j = 0; j < n; j++)
+            C[i][j] = A[i][j] + B[i][j];
 }
 
-int main() {
-    int n;
-    cout << "Enter number of vehicles: ";
-    cin >> n;
+void multiply(int A[MAX][MAX], int B[MAX][MAX], int C[MAX][MAX], int n) {
+    int A11[MAX][MAX], A12[MAX][MAX], A21[MAX][MAX], A22[MAX][MAX];
+    int B11[MAX][MAX], B12[MAX][MAX], B21[MAX][MAX], B22[MAX][MAX];
+    int C11[MAX][MAX], C12[MAX][MAX], C21[MAX][MAX], C22[MAX][MAX];
+    int P1[MAX][MAX], P2[MAX][MAX], P3[MAX][MAX], P4[MAX][MAX];
+    int P5[MAX][MAX], P6[MAX][MAX], P7[MAX][MAX];
+    int T1[MAX][MAX], T2[MAX][MAX];
+    int i, j, k = n / 2;
 
-    VehicleFleet **v = new VehicleFleet*[n];
-
-    for (int i = 0; i < n; i++) {
-        v[i] = new VehicleFleet(i + 1);
-        cout << "Enter 5-day fuel consumption: ";
-        v[i]->input();
+    if (n == 1) {
+        C[0][0] = A[0][0] * B[0][0];
+        return;
     }
 
-    for (int i = 0; i < n; i++)
-        cout << "Vehicle " << i + 1 << " total: "
-             << v[i]->calculateFuel() << "\n";
+    for (i = 0; i < k; i++)
+        for (j = 0; j < k; j++) {
+            A11[i][j] = A[i][j];
+            A12[i][j] = A[i][j+k];
+            A21[i][j] = A[i+k][j];
+            A22[i][j] = A[i+k][j+k];
 
-    if (n >= 2) {
-        compareVehicles(*v[0], *v[1]);
-        VehicleFleet x = *v[0] + *v[1];
-        cout << "Combined 5-day consumption: ";
-        for (int i = 1; i <= 5; i++)
-            cout << x.calculateFuel(i, i) << " ";
-        cout << "\n";
-    }
+            B11[i][j] = B[i][j];
+            B12[i][j] = B[i][j+k];
+            B21[i][j] = B[i+k][j];
+            B22[i][j] = B[i+k][j+k];
+        }
 
-    for (int i = 0; i < n; i++)
-        delete v[i];
-    delete[] v;
-}
+    multiply(A11, B11, T1, k);
+    multiply(A12, B21, T2, k);
+    add(T1, T2, C11, k);
 
+    multiply(A11, B12, T1, k);
+    multiply(A12, B22, T2, k);
+    add(T1, T2, C12, k);
 
-#include <iostream>
-using namespace std;
+    multiply(A21, B11, T1, k);
+    multiply(A22, B21, T2, k);
+    add(T1, T2, C21, k);
 
-class ElectricityUsage {
-    int n;
-    float *units;
+    multiply(A21, B12, T1, k);
+    multiply(A22, B22, T2, k);
+    add(T1, T2, C22, k);
 
-public:
-    ElectricityUsage(int x) {
-        n = x;
-        units = new float[n];
-    }
-
-    ~ElectricityUsage() {
-        delete[] units;
-    }
-
-    void input() {
-        for (float *p = units; p < units + n; p++)
-            cin >> *p;
-    }
-
-    float calculateBill(float rate) {
-        return *units * rate;
-    }
-
-    float calculateBill(float rate, int count) {
-        float total = 0;
-        for (int i = 0; i < count && i < n; i++)
-            total += *(units + i);
-        return total * rate;
-    }
-
-    ElectricityUsage operator+(ElectricityUsage &e) {
-        ElectricityUsage temp(n);
-        for (int i = 0; i < n; i++)
-            temp.units[i] = units[i] + e.units[i];
-        return temp;
-    }
-
-    float total() {
-        float s = 0;
-        for (float *p = units; p < units + n; p++)
-            s += *p;
-        return s;
-    }
-
-    friend void compareUsage(ElectricityUsage &, ElectricityUsage &);
-};
-
-void compareUsage(ElectricityUsage &a, ElectricityUsage &b) {
-    if (a.total() > b.total())
-        cout << "Group 1 consumed more electricity\n";
-    else if (a.total() < b.total())
-        cout << "Group 2 consumed more electricity\n";
-    else
-        cout << "Both groups consumed equal electricity\n";
-}
-
-int main() {
-    int n;
-    float rate;
-
-    cout << "Enter number of consumers: ";
-    cin >> n;
-
-    ElectricityUsage *a = new ElectricityUsage(n);
-    ElectricityUsage *b = new ElectricityUsage(n);
-
-    cout << "Enter units for Group 1: ";
-    a->input();
-
-    cout << "Enter units for Group 2: ";
-    b->input();
-
-    cout << "Enter rate per unit: ";
-    cin >> rate;
-
-    cout << "Group 1 bill: " << a->calculateBill(rate, n) << "\n";
-    cout << "Group 2 bill: " << b->calculateBill(rate, n) << "\n";
-
-    compareUsage(*a, *b);
-
-    ElectricityUsage c = *a + *b;
-    cout << "Combined bill: " << c.calculateBill(rate, n) << "\n";
-
-    delete a;
-    delete b;
-}
-
-
-#include <iostream>
-using namespace std;
-
-class Patient {
-    int id, n;
-    int *health;
-
-public:
-    Patient(int i, int x) {
-        id = i;
-        n = x;
-        health = new int[n];
-    }
-
-    ~Patient() {
-        delete[] health;
-    }
-
-    void input() {
-        for (int *p = health; p < health + n; p++)
-            cin >> *p;
-    }
-
-    int calculateScore(int x) {
-        return x;
-    }
-
-    int calculateScore(int a, int b, int c) {
-        return a + b + c;
-    }
-
-    int total() {
-        int s = 0;
-        for (int *p = health; p < health + n; p++)
-            s += *p;
-        return s;
-    }
-
-    Patient operator+(Patient &p) {
-        Patient temp(0, n);
-        for (int i = 0; i < n; i++)
-            temp.health[i] = health[i] + p.health[i];
-        return temp;
-    }
-
-    friend void findHealthiest(Patient **, int);
-};
-
-void findHealthiest(Patient **p, int n) {
-    int pos = 0;
-
-    for (int i = 1; i < n; i++)
-        if (p[i]->total() > p[pos]->total())
-            pos = i;
-
-    cout << "Healthiest patient: " << p[pos]->id << "\n";
-    cout << "Overall score: " << p[pos]->total() << "\n";
+    for (i = 0; i < k; i++)
+        for (j = 0; j < k; j++) {
+            C[i][j] = C11[i][j];
+            C[i][j+k] = C12[i][j];
+            C[i+k][j] = C21[i][j];
+            C[i+k][j+k] = C22[i][j];
+        }
 }
 
 int main() {
-    int n, sessions;
+    int A[MAX][MAX], B[MAX][MAX], C[MAX][MAX];
+    int n, i, j;
 
-    cout << "Enter number of patients and sessions: ";
-    cin >> n >> sessions;
+    printf("Enter matrix size: ");
+    scanf("%d", &n);
 
-    Patient **p = new Patient*[n];
+    printf("Enter first matrix:\n");
+    for (i = 0; i < n; i++)
+        for (j = 0; j < n; j++)
+            scanf("%d", &A[i][j]);
 
-    for (int i = 0; i < n; i++) {
-        p[i] = new Patient(i + 1, sessions);
-        cout << "Enter health readings: ";
-        p[i]->input();
-        cout << "Score: " << p[i]->total() << "\n";
+    printf("Enter second matrix:\n");
+    for (i = 0; i < n; i++)
+        for (j = 0; j < n; j++)
+            scanf("%d", &B[i][j]);
+
+    multiply(A, B, C, n);
+
+    printf("Result:\n");
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < n; j++)
+            printf("%d ", C[i][j]);
+        printf("\n");
     }
 
-    findHealthiest(p, n);
+    return 0;
+}
 
-    if (n >= 2) {
-        Patient x = *p[0] + *p[1];
-        cout << "Combined health readings: ";
-        x.input();
+#include <stdio.h>
+
+#define SIZE 10
+
+int hash(int key) {
+    return key % SIZE;
+}
+
+void insert(int a[], int key) {
+    int i, index = hash(key);
+
+    for (i = 0; i < SIZE; i++) {
+        int pos = (index + i) % SIZE;
+        if (a[pos] == -1) {
+            a[pos] = key;
+            return;
+        }
     }
 
-    for (int i = 0; i < n; i++)
-        delete p[i];
-    delete[] p;
+    printf("Hash table is full\n");
+}
+
+void display(int a[]) {
+    int i;
+    for (i = 0; i < SIZE; i++)
+        printf("%d : %d\n", i, a[i]);
+}
+
+int main() {
+    int a[SIZE], n, key, i;
+
+    for (i = 0; i < SIZE; i++)
+        a[i] = -1;
+
+    printf("Enter number of elements: ");
+    scanf("%d", &n);
+
+    printf("Enter elements: ");
+    for (i = 0; i < n; i++) {
+        scanf("%d", &key);
+        insert(a, key);
+    }
+
+    printf("\nHash Table:\n");
+    display(a);
+
+    return 0;
+}
+
+Sample Input
+
+Enter number of elements: 6
+Enter elements: 25 32 42 17 52 62
+
+Sample Output
+
+Hash Table:
+0 : -1
+1 : -1
+2 : 32
+3 : 42
+4 : 52
+5 : 25
+6 : 62
+7 : 17
+8 : -1
+9 : -1
+
+---
+
+2. Matrix Multiplication Using Divide and Conquer
+
+Normally, matrix multiplication uses three nested loops.
+
+For two "n × n" matrices:
+
+[
+C[i][j] = \sum_{k=0}^{n-1} A[i][k]B[k][j]
+]
+
+The normal algorithm has:
+
+[
+T(n)=O(n^3)
+]
+
+Divide and Conquer divides each matrix into four submatrices.
+
+Suppose:
+
+[
+A =
+\begin{bmatrix}
+A_{11} & A_{12}\
+A_{21} & A_{22}
+\end{bmatrix}
+]
+
+and
+
+[
+B =
+\begin{bmatrix}
+B_{11} & B_{12}\
+B_{21} & B_{22}
+\end{bmatrix}
+]
+
+Then:
+
+[
+C_{11}=A_{11}B_{11}+A_{12}B_{21}
+]
+
+[
+C_{12}=A_{11}B_{12}+A_{12}B_{22}
+]
+
+[
+C_{21}=A_{21}B_{11}+A_{22}B_{21}
+]
+
+[
+C_{22}=A_{21}B_{12}+A_{22}B_{22}
+]
+
+The process continues recursively until the matrix becomes "1 × 1".
+
+---
+
+Divide and Conquer Recurrence
+
+For ordinary divide-and-conquer matrix multiplication:
+
+[
+T(n)=8T(n/2)+O(n^2)
+]
+
+Therefore:
+
+[
+T(n)=O(n^3)
+]
+
+So ordinary divide-and-conquer matrix multiplication does not improve the asymptotic complexity over the standard algorithm.
+
+---
+
+C Program: Matrix Multiplication Using Divide and Conquer
+
+This version assumes "n" is a power of 2, such as "2, 4, 8, 16...".
+
+:::writing{variant="document" id="74106" title="Matrix Multiplication Using Divide and Conquer in C"}
+
+#include <stdio.h>
+
+#define MAX 64
+
+void add(int A[MAX][MAX], int B[MAX][MAX], int C[MAX][MAX], int n) {
+    int i, j;
+    for (i = 0; i < n; i++)
+        for (j = 0; j < n; j++)
+            C[i][j] = A[i][j] + B[i][j];
+}
+
+void multiply(int A[MAX][MAX], int B[MAX][MAX], int C[MAX][MAX], int n) {
+    int A11[MAX][MAX], A12[MAX][MAX], A21[MAX][MAX], A22[MAX][MAX];
+    int B11[MAX][MAX], B12[MAX][MAX], B21[MAX][MAX], B22[MAX][MAX];
+    int C11[MAX][MAX], C12[MAX][MAX], C21[MAX][MAX], C22[MAX][MAX];
+    int P1[MAX][MAX], P2[MAX][MAX], P3[MAX][MAX], P4[MAX][MAX];
+    int P5[MAX][MAX], P6[MAX][MAX], P7[MAX][MAX];
+    int T1[MAX][MAX], T2[MAX][MAX];
+    int i, j, k = n / 2;
+
+    if (n == 1) {
+        C[0][0] = A[0][0] * B[0][0];
+        return;
+    }
+
+    for (i = 0; i < k; i++)
+        for (j = 0; j < k; j++) {
+            A11[i][j] = A[i][j];
+            A12[i][j] = A[i][j+k];
+            A21[i][j] = A[i+k][j];
+            A22[i][j] = A[i+k][j+k];
+
+            B11[i][j] = B[i][j];
+            B12[i][j] = B[i][j+k];
+            B21[i][j] = B[i+k][j];
+            B22[i][j] = B[i+k][j+k];
+        }
+
+    multiply(A11, B11, T1, k);
+    multiply(A12, B21, T2, k);
+    add(T1, T2, C11, k);
+
+    multiply(A11, B12, T1, k);
+    multiply(A12, B22, T2, k);
+    add(T1, T2, C12, k);
+
+    multiply(A21, B11, T1, k);
+    multiply(A22, B21, T2, k);
+    add(T1, T2, C21, k);
+
+    multiply(A21, B12, T1, k);
+    multiply(A22, B22, T2, k);
+    add(T1, T2, C22, k);
+
+    for (i = 0; i < k; i++)
+        for (j = 0; j < k; j++) {
+            C[i][j] = C11[i][j];
+            C[i][j+k] = C12[i][j];
+            C[i+k][j] = C21[i][j];
+            C[i+k][j+k] = C22[i][j];
+        }
+}
+
+int main() {
+    int A[MAX][MAX], B[MAX][MAX], C[MAX][MAX];
+    int n, i, j;
+
+    printf("Enter matrix size: ");
+    scanf("%d", &n);
+
+    printf("Enter first matrix:\n");
+    for (i = 0; i < n; i++)
+        for (j = 0; j < n; j++)
+            scanf("%d", &A[i][j]);
+
+    printf("Enter second matrix:\n");
+    for (i = 0; i < n; i++)
+        for (j = 0; j < n; j++)
+            scanf("%d", &B[i][j]);
+
+    multiply(A, B, C, n);
+
+    printf("Result:\n");
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < n; j++)
+            printf("%d ", C[i][j]);
+        printf("\n");
+    }
+
+    return 0;
 }
