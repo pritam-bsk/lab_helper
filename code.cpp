@@ -1,190 +1,220 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #define TABLE_SIZE 10
 
-typedef struct Node {
-    char* key;
-    int value;
-    struct Node* next;
-} Node;
+int hashTable[TABLE_SIZE];
 
-typedef struct {
-    Node* buckets[TABLE_SIZE];
-} HashTable;
-
-unsigned int hash(const char* key) {
-    unsigned long int value = 0;
-    unsigned int i = 0;
-    unsigned int key_len = strlen(key);
-
-    for (; i < key_len; ++i) {
-        value = value * 37 + key[i];
-    }
-
-    return value % TABLE_SIZE;
+int hashFunction(int key)
+{
+    return key % TABLE_SIZE;
 }
 
-HashTable* create_table() {
-    HashTable* table = malloc(sizeof(HashTable));
-    for (int i = 0; i < TABLE_SIZE; i++) {
-        table->buckets[i] = NULL;
-    }
-    return table;
+void initialize()
+{
+    int i;
+    for (i = 0; i < TABLE_SIZE; i++)
+        hashTable[i] = -1;
 }
 
-void insert(HashTable* table, const char* key, int value) {
-    unsigned int bucket_index = hash(key);
-    Node* current = table->buckets[bucket_index];
+void insert(int key)
+{
+    int index, i = 0, newIndex;
 
-    while (current != NULL) {
-        if (strcmp(current->key, key) == 0) {
-            current->value = value;
+    index = hashFunction(key);
+
+    printf("\nInserting %d:", key);
+    printf("\n  Hash value = %d %% %d = %d", key, TABLE_SIZE, index);
+
+    while (hashTable[(index + i) % TABLE_SIZE] != -1)
+    {
+        newIndex = (index + i) % TABLE_SIZE;
+
+        printf("\n  Collision at index %d", newIndex);
+        i++;
+
+        if (i == TABLE_SIZE)
+        {
+            printf("\nHash table is full!");
             return;
         }
-        current = current->next;
+
+        newIndex = (index + i) % TABLE_SIZE;
+        printf("\n  Probing index %d", newIndex);
     }
 
-    Node* new_node = malloc(sizeof(Node));
-    new_node->key = strdup(key); 
-    new_node->value = value;
-    new_node->next = table->buckets[bucket_index];
-    table->buckets[bucket_index] = new_node;
+    newIndex = (index + i) % TABLE_SIZE;
+    hashTable[newIndex] = key;
+
+    printf("\n  Key %d inserted at index %d\n", key, newIndex);
 }
 
-int search(HashTable* table, const char* key, int* out_value) {
-    unsigned int bucket_index = hash(key);
-    Node* current = table->buckets[bucket_index];
+void display()
+{
+    int i;
 
-    while (current != NULL) {
-        if (strcmp(current->key, key) == 0) {
-            *out_value = current->value;
-            return 1;
+    printf("\n\nFinal Hash Table:\n");
+    printf("-----------------\n");
+
+    for (i = 0; i < TABLE_SIZE; i++)
+    {
+        if (hashTable[i] == -1)
+            printf("Index %d : EMPTY\n", i);
+        else
+            printf("Index %d : %d\n", i, hashTable[i]);
+    }
+}
+
+int main()
+{
+    int n, i, key;
+    int collisions = 0;
+
+    initialize();
+
+    printf("Enter number of keys: ");
+    scanf("%d", &n);
+
+    for (i = 0; i < n; i++)
+    {
+        printf("Enter key %d: ", i + 1);
+        scanf("%d", &key);
+
+        int index = hashFunction(key);
+
+        /* Count collisions before insertion */
+        while (hashTable[index] != -1)
+        {
+            collisions++;
+            index = (index + 1) % TABLE_SIZE;
         }
-        current = current->next;
+
+        insert(key);
     }
-    return 0; 
-}
 
-void print_table(HashTable* table) {
-    for (int i = 0; i < TABLE_SIZE; i++) {
-        printf("Bucket %d: ", i);
-        Node* current = table->buckets[i];
-        while (current != NULL) {
-            printf("[%s: %d] -> ", current->key, current->value);
-            current = current->next;
-        }
-        printf("NULL\n");
-    }
-}
+    display();
 
-int main() {
-    HashTable* my_table = create_table();
-
-    insert(my_table, "apple", 100);
-    insert(my_table, "banana", 250);
-    insert(my_table, "orange", 400);
-    insert(my_table, "grapes", 120);
-
-    printf("--- Current Hash Table Structure ---\n");
-    print_table(my_table);
-
-    printf("\n--- Searching for keys ---\n");
-    int val;
-    if (search(my_table, "banana", &val)) {
-        printf("Found banana! Value is %d\n", val);
-    } else {
-        printf("Banana not found.\n");
-    }
+    printf("\nTotal number of collisions = %d\n", collisions);
 
     return 0;
 }
 
 
 
-
 #include <stdio.h>
-#include <stdlib.h>
 
-void add(int n, int A[n][n], int B[n][n], int C[n][n]) {
-    for (int i = 0; i < n; i++)
-        for (int j = 0; j < n; j++)
+#define MAX 100
+
+void add(int n, int A[MAX][MAX], int B[MAX][MAX], int C[MAX][MAX])
+{
+    int i, j;
+
+    for (i = 0; i < n; i++)
+        for (j = 0; j < n; j++)
             C[i][j] = A[i][j] + B[i][j];
 }
 
-void multiply(int n, int A[n][n], int B[n][n], int C[n][n]) {
-    if (n == 1) {
+void multiply(int n, int A[MAX][MAX], int B[MAX][MAX], int C[MAX][MAX])
+{
+    int i, j, k;
+
+    /* Base case */
+    if (n == 1)
+    {
         C[0][0] = A[0][0] * B[0][0];
         return;
     }
 
-    int k = n / 2;
+    int mid = n / 2;
 
-    int A11[k][k], A12[k][k], A21[k][k], A22[k][k];
-    int B11[k][k], B12[k][k], B21[k][k], B22[k][k];
-    int C11[k][k], C12[k][k], C21[k][k], C22[k][k];
-    int T1[k][k], T2[k][k];
+    int A11[MAX][MAX], A12[MAX][MAX];
+    int A21[MAX][MAX], A22[MAX][MAX];
 
-    for (int i = 0; i < k; i++) {
-        for (int j = 0; j < k; j++) {
+    int B11[MAX][MAX], B12[MAX][MAX];
+    int B21[MAX][MAX], B22[MAX][MAX];
+
+    int C11[MAX][MAX], C12[MAX][MAX];
+    int C21[MAX][MAX], C22[MAX][MAX];
+
+    int P1[MAX][MAX], P2[MAX][MAX];
+    int P3[MAX][MAX], P4[MAX][MAX];
+    int P5[MAX][MAX], P6[MAX][MAX];
+    int P7[MAX][MAX], P8[MAX][MAX];
+
+    /* Divide matrices into submatrices */
+    for (i = 0; i < mid; i++)
+    {
+        for (j = 0; j < mid; j++)
+        {
             A11[i][j] = A[i][j];
-            A12[i][j] = A[i][j + k];
-            A21[i][j] = A[i + k][j];
-            A22[i][j] = A[i + k][j + k];
+            A12[i][j] = A[i][j + mid];
+            A21[i][j] = A[i + mid][j];
+            A22[i][j] = A[i + mid][j + mid];
 
             B11[i][j] = B[i][j];
-            B12[i][j] = B[i][j + k];
-            B21[i][j] = B[i + k][j];
-            B22[i][j] = B[i + k][j + k];
+            B12[i][j] = B[i][j + mid];
+            B21[i][j] = B[i + mid][j];
+            B22[i][j] = B[i + mid][j + mid];
         }
     }
 
-    multiply(k, A11, B11, T1);
-    multiply(k, A12, B21, T2);
-    add(k, T1, T2, C11);
+    /* Recursive multiplications */
+    multiply(mid, A11, B11, P1);
+    multiply(mid, A12, B21, P2);
+    multiply(mid, A11, B12, P3);
+    multiply(mid, A12, B22, P4);
+    multiply(mid, A21, B11, P5);
+    multiply(mid, A22, B21, P6);
+    multiply(mid, A21, B12, P7);
+    multiply(mid, A22, B22, P8);
 
-    multiply(k, A11, B12, T1);
-    multiply(k, A12, B22, T2);
-    add(k, T1, T2, C12);
+    /* Calculate result submatrices */
+    add(mid, P1, P2, C11);
+    add(mid, P3, P4, C12);
+    add(mid, P5, P6, C21);
+    add(mid, P7, P8, C22);
 
-    multiply(k, A21, B11, T1);
-    multiply(k, A22, B21, T2);
-    add(k, T1, T2, C21);
-
-    multiply(k, A21, B12, T1);
-    multiply(k, A22, B22, T2);
-    add(k, T1, T2, C22);
-
-    for (int i = 0; i < k; i++) {
-        for (int j = 0; j < k; j++) {
+    /* Combine submatrices */
+    for (i = 0; i < mid; i++)
+    {
+        for (j = 0; j < mid; j++)
+        {
             C[i][j] = C11[i][j];
-            C[i][j + k] = C12[i][j];
-            C[i + k][j] = C21[i][j];
-            C[i + k][j + k] = C22[i][j];
+            C[i][j + mid] = C12[i][j];
+            C[i + mid][j] = C21[i][j];
+            C[i + mid][j + mid] = C22[i][j];
         }
     }
 }
 
-int main() {
-    int n;
-    printf("Enter matrix size: ");
+int main()
+{
+    int A[MAX][MAX], B[MAX][MAX], C[MAX][MAX];
+    int n, i, j;
+
+    printf("Enter order of square matrices: ");
     scanf("%d", &n);
-    int A[n][n], B[n][n], C[n][n];
-    printf("Enter first matrix:\n");
-    for (int i = 0; i < n; i++)
-        for (int j = 0; j < n; j++)
+
+    printf("\nEnter elements of Matrix A:\n");
+    for (i = 0; i < n; i++)
+        for (j = 0; j < n; j++)
             scanf("%d", &A[i][j]);
-    printf("Enter second matrix:\n");
-    for (int i = 0; i < n; i++)
-        for (int j = 0; j < n; j++)
+
+    printf("\nEnter elements of Matrix B:\n");
+    for (i = 0; i < n; i++)
+        for (j = 0; j < n; j++)
             scanf("%d", &B[i][j]);
+
     multiply(n, A, B, C);
-    printf("Result:\n");
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++)
-            printf("%d ", C[i][j]);
+
+    printf("\nResultant Matrix:\n");
+
+    for (i = 0; i < n; i++)
+    {
+        for (j = 0; j < n; j++)
+            printf("%d\t", C[i][j]);
+
         printf("\n");
     }
+
     return 0;
 }
