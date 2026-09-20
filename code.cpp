@@ -1,332 +1,295 @@
-#include <iostream>
-using namespace std;
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
-class Stack {
-    int a[5], top;
-public:
-    Stack() { top = -1; }
+#define MAX 1000
 
-    void push(int x) {
-        if (top == 4) cout << "Overflow\n";
-        else a[++top] = x;
-    }
+/* Remove leading zeros */
+void removeLeadingZeros(char *str)
+{
+    int i = 0;
 
-    void pop() {
-        if (top == -1) cout << "Underflow\n";
-        else cout << "Popped: " << a[top--] << endl;
-    }
+    while (str[i] == '0' && str[i + 1] != '\0')
+        i++;
 
-    void display() {
-        if (top == -1) cout << "Empty\n";
-        else for (int i = top; i >= 0; i--) cout << a[i] << " ";
-        cout << endl;
-    }
-};
-
-int main() {
-    Stack s;
-    s.push(10);
-    s.push(20);
-    s.push(30);
-    s.display();
-    s.pop();
-    s.display();
+    if (i > 0)
+        memmove(str, str + i, strlen(str + i) + 1);
 }
 
-#include <iostream>
-#include <stack>
-using namespace std;
+/* Add two positive integers represented as strings */
+void add(char *a, char *b, char *result)
+{
+    int i = strlen(a) - 1;
+    int j = strlen(b) - 1;
+    int k = 0, carry = 0;
 
-class Stack {
-    stack<char> s;
-public:
-    void push(char c) { s.push(c); }
-    void pop() { s.pop(); }
-    char top() { return s.top(); }
-    bool empty() { return s.empty(); }
-};
+    char temp[MAX];
 
-int main() {
-    string str;
-    cin >> str;
-    Stack s;
-    bool ok = true;
+    while (i >= 0 || j >= 0 || carry)
+    {
+        int sum = carry;
 
-    for (char c : str) {
-        if (c == '(' || c == '{' || c == '[')
-            s.push(c);
-        else if (c == ')' || c == '}' || c == ']') {
-            if (s.empty()) { ok = false; break; }
-            char t = s.top();
-            if ((c == ')' && t != '(') ||
-                (c == '}' && t != '{') ||
-                (c == ']' && t != '[')) {
-                ok = false;
-                break;
-            }
-            s.pop();
+        if (i >= 0)
+            sum += a[i--] - '0';
+
+        if (j >= 0)
+            sum += b[j--] - '0';
+
+        temp[k++] = (sum % 10) + '0';
+        carry = sum / 10;
+    }
+
+    for (int x = 0; x < k; x++)
+        result[x] = temp[k - x - 1];
+
+    result[k] = '\0';
+
+    removeLeadingZeros(result);
+}
+
+/* Subtract b from a, assuming a >= b */
+void subtract(char *a, char *b, char *result)
+{
+    int i = strlen(a) - 1;
+    int j = strlen(b) - 1;
+    int borrow = 0;
+    int k = 0;
+
+    char temp[MAX];
+
+    while (i >= 0)
+    {
+        int diff = (a[i] - '0') - borrow;
+
+        if (j >= 0)
+            diff -= (b[j--] - '0');
+
+        if (diff < 0)
+        {
+            diff += 10;
+            borrow = 1;
         }
-    }
-
-    if (!s.empty()) ok = false;
-    cout << (ok ? "Balanced" : "Not Balanced");
-}
-#include <iostream>
-using namespace std;
-
-class Stack {
-    int a[32], top;
-public:
-    Stack() { top = -1; }
-    void push(int x) { a[++top] = x; }
-    int pop() { return a[top--]; }
-    bool empty() { return top == -1; }
-};
-
-int main() {
-    int n;
-    cin >> n;
-    Stack s;
-
-    if (n == 0) cout << 0;
-    else {
-        while (n) {
-            s.push(n % 2);
-            n /= 2;
+        else
+        {
+            borrow = 0;
         }
-        while (!s.empty())
-            cout << s.pop();
+
+        temp[k++] = diff + '0';
+        i--;
     }
+
+    while (k > 1 && temp[k - 1] == '0')
+        k--;
+
+    for (int x = 0; x < k; x++)
+        result[x] = temp[k - x - 1];
+
+    result[k] = '\0';
 }
 
-#include <iostream>
-#include <stack>
-using namespace std;
+/* Shift number left by appending zeros */
+void shiftLeft(char *num, int zeros, char *result)
+{
+    int len = strlen(num);
 
-class Stack {
-    stack<char> s;
-public:
-    void push(char c) { s.push(c); }
-    void pop() { s.pop(); }
-    char top() { return s.top(); }
-    bool empty() { return s.empty(); }
-};
+    if (strcmp(num, "0") == 0)
+    {
+        strcpy(result, "0");
+        return;
+    }
 
-int priority(char c) {
-    if (c == '^') return 3;
-    if (c == '*' || c == '/') return 2;
-    if (c == '+' || c == '-') return 1;
+    strcpy(result, num);
+
+    for (int i = 0; i < zeros; i++)
+        result[len + i] = '0';
+
+    result[len + zeros] = '\0';
+}
+
+/* Karatsuba multiplication */
+void karatsuba(char *x, char *y, char *result)
+{
+    int n, m;
+
+    removeLeadingZeros(x);
+    removeLeadingZeros(y);
+
+    if (strcmp(x, "0") == 0 || strcmp(y, "0") == 0)
+    {
+        strcpy(result, "0");
+        return;
+    }
+
+    /* For small numbers, perform normal multiplication */
+    if (strlen(x) <= 4 || strlen(y) <= 4)
+    {
+        long long a = atoll(x);
+        long long b = atoll(y);
+
+        sprintf(result, "%lld", a * b);
+        return;
+    }
+
+    /* Make both numbers the same length */
+    n = strlen(x) > strlen(y) ? strlen(x) : strlen(y);
+
+    char xx[MAX], yy[MAX];
+
+    sprintf(xx, "%0*s", n, x);
+    sprintf(yy, "%0*s", n, y);
+
+    m = n / 2;
+
+    char a[MAX], b[MAX], c[MAX], d[MAX];
+
+    strncpy(a, xx, m);
+    a[m] = '\0';
+
+    strcpy(b, xx + m);
+
+    strncpy(c, yy, m);
+    c[m] = '\0';
+
+    strcpy(d, yy + m);
+
+    char p[MAX], q[MAX], r[MAX];
+    char sum1[MAX], sum2[MAX];
+
+    char middle[MAX];
+    char part1[MAX], part2[MAX];
+
+    /* p = ac */
+    karatsuba(a, c, p);
+
+    /* q = bd */
+    karatsuba(b, d, q);
+
+    /* r = (a+b)(c+d) */
+    add(a, b, sum1);
+    add(c, d, sum2);
+
+    karatsuba(sum1, sum2, r);
+
+    /* middle = r - p - q */
+    char temp[MAX];
+
+    subtract(r, p, temp);
+    subtract(temp, q, middle);
+
+    /* part1 = p * 10^(2m) */
+    shiftLeft(p, 2 * m, part1);
+
+    /* part2 = middle * 10^m */
+    shiftLeft(middle, m, part2);
+
+    /* result = part1 + part2 + q */
+    add(part1, part2, temp);
+    add(temp, q, result);
+
+    removeLeadingZeros(result);
+}
+
+int main()
+{
+    char x[MAX], y[MAX];
+    char result[MAX];
+
+    printf("Enter first large number: ");
+    scanf("%999s", x);
+
+    printf("Enter second large number: ");
+    scanf("%999s", y);
+
+    karatsuba(x, y, result);
+
+    printf("\nProduct = %s\n", result);
+
     return 0;
 }
 
-int main() {
-    string infix, postfix = "";
-    cin >> infix;
-    Stack s;
+#include <stdio.h>
 
-    for (char c : infix) {
-        if (isalnum(c))
-            postfix += c;
-        else if (c == '(')
-            s.push(c);
-        else if (c == ')') {
-            while (!s.empty() && s.top() != '(') {
-                postfix += s.top();
-                s.pop();
-            }
-            s.pop();
-        }
-        else {
-            while (!s.empty() && priority(s.top()) >= priority(c)) {
-                postfix += s.top();
-                s.pop();
-            }
-            s.push(c);
-        }
+/* Count number of digits */
+int countDigits(long long n)
+{
+    int count = 0;
+
+    if (n == 0)
+        return 1;
+
+    while (n != 0)
+    {
+        count++;
+        n /= 10;
     }
 
-    while (!s.empty()) {
-        postfix += s.top();
-        s.pop();
-    }
-
-    cout << postfix;
+    return count;
 }
 
-#include <iostream>
-using namespace std;
+/* Calculate 10^n */
+long long power10(int n)
+{
+    long long result = 1;
 
-class Queue {
-    int a[5], front, rear;
-public:
-    Queue() { front = 0; rear = -1; }
+    for (int i = 0; i < n; i++)
+        result *= 10;
 
-    void insert(int x) {
-        if (rear == 4) cout << "Overflow\n";
-        else a[++rear] = x;
-    }
-
-    void remove() {
-        if (front > rear) cout << "Underflow\n";
-        else cout << "Deleted: " << a[front++] << endl;
-    }
-
-    void display() {
-        if (front > rear) cout << "Empty\n";
-        else {
-            for (int i = front; i <= rear; i++) cout << a[i] << " ";
-            cout << endl;
-        }
-    }
-};
-
-int main() {
-    Queue q;
-    q.insert(10);
-    q.insert(20);
-    q.insert(30);
-    q.display();
-    q.remove();
-    q.display();
+    return result;
 }
 
+/* Mid-square hash function */
+int midSquareHash(long long key, int tableSize)
+{
+    long long square = key * key;
 
-#include <iostream>
-using namespace std;
+    int squareDigits = countDigits(square);
+    int hashDigits = countDigits(tableSize - 1);
 
-class Queue {
-    int a[5], front, rear;
-public:
-    Queue() { front = rear = -1; }
+    /*
+       Number of digits to remove from the right
+       to reach the middle portion.
+    */
+    int start = (squareDigits - hashDigits) / 2;
 
-    void insert(int x) {
-        if ((rear + 1) % 5 == front) {
-            cout << "Overflow\n";
-            return;
-        }
-        if (front == -1) front = 0;
-        rear = (rear + 1) % 5;
-        a[rear] = x;
-    }
+    if (start < 0)
+        start = 0;
 
-    void remove() {
-        if (front == -1) {
-            cout << "Underflow\n";
-            return;
-        }
-        cout << "Deleted: " << a[front] << endl;
-        if (front == rear)
-            front = rear = -1;
-        else
-            front = (front + 1) % 5;
-    }
+    long long divisor = power10(start);
 
-    void display() {
-        if (front == -1) {
-            cout << "Empty\n";
-            return;
-        }
-        int i = front;
-        while (true) {
-            cout << a[i] << " ";
-            if (i == rear) break;
-            i = (i + 1) % 5;
-        }
-        cout << endl;
-    }
-};
+    long long middle = (square / divisor) %
+                       power10(hashDigits);
 
-int main() {
-    Queue q;
-    q.insert(10);
-    q.insert(20);
-    q.insert(30);
-    q.display();
-    q.remove();
-    q.insert(40);
-    q.display();
+    return middle % tableSize;
 }
 
+int main()
+{
+    int n;
+    int tableSize;
 
-#include <iostream>
-using namespace std;
+    printf("Enter hash table size: ");
+    scanf("%d", &tableSize);
 
-class Queue {
-    int a[10], front, rear;
-public:
-    Queue() { front = 0; rear = -1; }
+    printf("Enter number of keys: ");
+    scanf("%d", &n);
 
-    void add(int x) {
-        if (rear == 9) cout << "Queue Full\n";
-        else a[++rear] = x;
+    printf("\nMid-Square Hash Values:\n");
+
+    for (int i = 0; i < n; i++)
+    {
+        long long key;
+
+        printf("\nEnter key: ");
+        scanf("%lld", &key);
+
+        long long square = key * key;
+
+        int hash = midSquareHash(key, tableSize);
+
+        printf("Key       = %lld\n", key);
+        printf("Square    = %lld\n", square);
+        printf("Hash Value = %d\n", hash);
     }
 
-    void serve() {
-        if (front > rear) cout << "No customers\n";
-        else cout << a[front++] << " is served first\n";
-    }
-
-    void next() {
-        if (front > rear) cout << "No customers\n";
-        else cout << "Next: " << a[front] << endl;
-    }
-
-    void display() {
-        for (int i = front; i <= rear; i++)
-            cout << a[i] << " ";
-        cout << endl;
-    }
-};
-
-int main() {
-    Queue q;
-    q.add(101);
-    q.add(102);
-    q.add(103);
-
-    q.display();
-    q.next();
-    q.serve();
-}
-
-#include <iostream>
-#include <stack>
-#include <queue>
-using namespace std;
-
-class Palindrome {
-    string s;
-    stack<char> st;
-    queue<char> q;
-
-public:
-    Palindrome(string x) {
-        s = x;
-        for (char c : s) {
-            st.push(c);
-            q.push(c);
-        }
-    }
-
-    bool check() {
-        while (!st.empty()) {
-            if (st.top() != q.front())
-                return false;
-            st.pop();
-            q.pop();
-        }
-        return true;
-    }
-};
-
-int main() {
-    string s;
-    cin >> s;
-
-    Palindrome p(s);
-
-    if (p.check())
-        cout << "Palindrome";
-    else
-        cout << "Not a palindrome";
+    return 0;
 }
