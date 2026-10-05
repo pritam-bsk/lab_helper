@@ -1,81 +1,87 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-#define SIZE 100
+typedef struct {
+    int x, y;
+} Point;
 
-int hashTable[SIZE];
+int compare(const void *a, const void *b) {
+    Point *p = (Point *)a;
+    Point *q = (Point *)b;
 
-int midSquareHash(int key)
-{
-    long long square = (long long)key * key;
-    int start, digits = 2;
-    long long divisor = 1;
-
-    while (square >= 10000000)
-        square /= 10;
-
-    int length = 0;
-    long long temp = square;
-
-    while (temp > 0)
-    {
-        length++;
-        temp /= 10;
-    }
-
-    start = (length - digits) / 2;
-
-    for (int i = 0; i < start; i++)
-        divisor *= 10;
-
-    return (square / divisor) % 100;
+    if (p->x != q->x)
+        return p->x - q->x;
+    return p->y - q->y;
 }
 
-int main()
-{
-    int n, key, index, pos;
-    int collisions = 0;
+int cross(Point a, Point b, Point c) {
+    return (b.x - a.x) * (c.y - a.y) -
+           (b.y - a.y) * (c.x - a.x);
+}
 
-    for (int i = 0; i < SIZE; i++)
-        hashTable[i] = -1;
+void mergeHull(Point p[], int l, int m, int r, Point h[], int *k) {
+    Point temp[1000];
+    int n = 0, i;
 
-    printf("Enter number of keys: ");
+    for (i = l; i <= r; i++)
+        temp[n++] = p[i];
+
+    for (i = 0; i < n; i++) {
+        while (*k >= 2 && cross(h[*k - 2], h[*k - 1], temp[i]) <= 0)
+            (*k)--;
+
+        h[(*k)++] = temp[i];
+    }
+}
+
+void convexHull(Point p[], int l, int r, Point h[], int *k) {
+    if (l == r) {
+        h[(*k)++] = p[l];
+        return;
+    }
+
+    int m = (l + r) / 2;
+
+    convexHull(p, l, m, h, k);
+    convexHull(p, m + 1, r, h, k);
+}
+
+int main() {
+    int n, i, k = 0;
+    Point p[1000], hull[1000], temp[1000];
+    
+    printf("Enter number of points: ");
     scanf("%d", &n);
 
-    printf("Enter the keys:\n");
+    printf("Enter the points:\n");
+    for (i = 0; i < n; i++)
+        scanf("%d %d", &p[i].x, &p[i].y);
 
-    for (int i = 0; i < n; i++)
-    {
-        scanf("%d", &key);
+    qsort(p, n, sizeof(Point), compare);
 
-        index = midSquareHash(key);
-        pos = index;
+    convexHull(p, 0, n - 1, hull, &k);
 
-        printf("\nKey %d:\n", key);
-        printf("Square = %lld\n", (long long)key * key);
-        printf("Initial hash index = %d\n", index);
+    k = 0;
 
-        while (hashTable[pos] != -1)
-        {
-            printf("Collision at index %d\n", pos);
-            collisions++;
-
-            pos = (pos + 1) % SIZE;
-            printf("Probing index %d\n", pos);
-        }
-
-        hashTable[pos] = key;
-        printf("Inserted at index %d\n", pos);
+    for (i = 0; i < n; i++) {
+        while (k >= 2 && cross(temp[k - 2], temp[k - 1], p[i]) <= 0)
+            k--;
+        temp[k++] = p[i];
     }
 
-    printf("\n----- FINAL HASH TABLE -----\n");
+    int lower = k;
 
-    for (int i = 0; i < SIZE; i++)
-    {
-        if (hashTable[i] != -1)
-            printf("Index %2d : %d\n", i, hashTable[i]);
+    for (i = n - 2; i >= 0; i--) {
+        while (k > lower && cross(temp[k - 2], temp[k - 1], p[i]) <= 0)
+            k--;
+        temp[k++] = p[i];
     }
 
-    printf("\nTotal number of collisions = %d\n", collisions);
+    k--;
+
+    printf("\nConvex Hull:\n");
+    for (i = 0; i < k; i++)
+        printf("(%d, %d)\n", temp[i].x, temp[i].y);
 
     return 0;
 }
