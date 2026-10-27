@@ -1,236 +1,164 @@
+#include <iostream>
+using namespace std;
+template <class T>
+T maximum(T a, T b, T c) {
+    return max(a, max(b, c));
+}
+template <class T>
+T minimum(T a, T b, T c) {
+    return min(a, min(b, c));
+}
+template <class T>
+T square(T a) {
+    return a * a;
+}
+int main() {
+    int a = 3, b = 7, c = 5;
+    float x = 2.5, y = 4.5, z = 1.5;
+    double p = 3.2, q = 1.8, r = 5.6;
+    cout << "Integer: " << maximum(a,b,c) << " " << minimum(a,b,c) << " " << square(a) << endl;
+    cout << "Float: " << maximum(x,y,z) << " " << minimum(x,y,z) << " " << square(x) << endl;
+    cout << "Double: " << maximum(p,q,r) << " " << minimum(p,q,r) << " " << square(p) << endl;
 
-#include <stdio.h>
+    return 0;
+}
 
-#define MAX 100
 
-struct Item {
-    int profit;
-    int weight;
-    float ratio;
+
+#include <iostream>
+using namespace std;
+template <class T>
+class Queue {
+    T a[5];
+    int f, r;
+public:
+    Queue() { f = r = -1; }
+    void enqueue(T x) {
+        if (r == 4) {
+            cout << "Overflow\n";
+            return;
+        }
+        if (f == -1) f = 0;
+        a[++r] = x;
+    }
+    void dequeue() {
+        if (f == -1 || f > r) {
+            cout << "Underflow\n";
+            return;
+        }
+        cout << "Removed: " << a[f++] << endl;
+        if (f > r) f = r = -1;
+    }
+    void front() {
+        if (f == -1) cout << "Queue empty\n";
+        else cout << "Front: " << a[f] << endl;
+    }
+    void display() {
+        if (f == -1) {
+            cout << "Queue empty\n";
+            return;
+        }
+        for (int i = f; i <= r; i++)
+            cout << a[i] << " ";
+        cout << endl;
+    }
 };
 
-void sortItems(struct Item a[], int n, int method) {
-    int i, j;
-    struct Item temp;
-
-    for (i = 0; i < n - 1; i++) {
-        for (j = 0; j < n - i - 1; j++) {
-            int swap = 0;
-
-            if (method == 1 &&
-                a[j].profit < a[j + 1].profit)
-                swap = 1;
-
-            if (method == 2 &&
-                a[j].weight > a[j + 1].weight)
-                swap = 1;
-
-            if (method == 3 &&
-                a[j].ratio < a[j + 1].ratio)
-                swap = 1;
-
-            if (swap) {
-                temp = a[j];
-                a[j] = a[j + 1];
-                a[j + 1] = temp;
-            }
-        }
-    }
-}
-
-float knapsack(struct Item items[], int n,
-               int capacity, int method) {
-    struct Item a[MAX];
-    float totalProfit = 0.0;
-    int i;
-
-    for (i = 0; i < n; i++)
-        a[i] = items[i];
-
-    sortItems(a, n, method);
-
-    for (i = 0; i < n && capacity > 0; i++) {
-        if (a[i].weight <= capacity) {
-            capacity -= a[i].weight;
-            totalProfit += a[i].profit;
-        } else {
-            totalProfit += a[i].ratio * capacity;
-            capacity = 0;
-        }
-    }
-
-    return totalProfit;
-}
-
 int main() {
-    struct Item items[MAX];
-    int n, capacity, i;
+    Queue<int> q;
+    q.enqueue(10);
+    q.enqueue(20);
+    q.enqueue(30);
+    q.display();
+    q.front();
+    q.dequeue();
+    q.display();
 
-    printf("Enter number of items: ");
-    scanf("%d", &n);
-
-    if (n <= 0 || n > MAX) {
-        printf("Invalid number of items.\n");
-        return 1;
-    }
-
-    printf("Enter profit and weight of each item:\n");
-
-    for (i = 0; i < n; i++) {
-        scanf("%d %d", &items[i].profit,
-                        &items[i].weight);
-
-        if (items[i].profit < 0 ||
-            items[i].weight <= 0) {
-            printf("Invalid profit or weight.\n");
-            return 1;
-        }
-
-        items[i].ratio =
-            (float)items[i].profit / items[i].weight;
-    }
-
-    printf("Enter knapsack capacity: ");
-    scanf("%d", &capacity);
-
-    if (capacity < 0) {
-        printf("Invalid capacity.\n");
-        return 1;
-    }
-
-    printf("\nMaximum profit using greedy methods:\n");
-
-    printf("1. Maximum profit method: %.2f\n",
-           knapsack(items, n, capacity, 1));
-
-    printf("2. Minimum weight method: %.2f\n",
-           knapsack(items, n, capacity, 2));
-
-    printf("3. Profit/weight ratio method: %.2f\n",
-           knapsack(items, n, capacity, 3));
+    Queue<char> c;
+    c.enqueue('A');
+    c.enqueue('B');
+    c.enqueue('C');
+    c.display();
+    c.front();
+    c.dequeue();
+    c.display();
 
     return 0;
 }
 
 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
 
-#define MAX 1000
-
-struct Point {
-    double x, y;
+#include <iostream>
+#include <vector>
+#include <cmath>
+using namespace std;
+template <class T>
+class Polynomial {
+    vector<T> a;
+public:
+    Polynomial(vector<T> v) : a(v) {}
+    Polynomial operator+(const Polynomial& p) {
+        vector<T> v(max(a.size(), p.a.size()), 0);
+        for (int i = 0; i < a.size(); i++) v[i] += a[i];
+        for (int i = 0; i < p.a.size(); i++) v[i] += p.a[i];
+        return Polynomial(v);
+    }
+    Polynomial operator-(const Polynomial& p) {
+        vector<T> v(max(a.size(), p.a.size()), 0);
+        for (int i = 0; i < a.size(); i++) v[i] += a[i];
+        for (int i = 0; i < p.a.size(); i++) v[i] -= p.a[i];
+        return Polynomial(v);
+    }
+    Polynomial operator*(const Polynomial& p) {
+        vector<T> v(a.size() + p.a.size() - 1, 0);
+        for (int i = 0; i < a.size(); i++)
+            for (int j = 0; j < p.a.size(); j++)
+                v[i + j] += a[i] * p.a[j];
+        return Polynomial(v);
+    }
+    T evaluate(T x) {
+        T result = 0;
+        for (int i = a.size() - 1; i >= 0; i--)
+            result = result * x + a[i];
+        return result;
+    }
+    void display() {
+        bool first = true;
+        for (int i = a.size() - 1; i >= 0; i--) {
+            if (a[i] == 0) continue;
+            if (!first) cout << (a[i] > 0 ? " + " : " - ");
+            else if (a[i] < 0) cout << "-";
+            T c = a[i] < 0 ? -a[i] : a[i];
+            if (i == 0 || c != 1) cout << c;
+            if (i > 0) cout << "x";
+            if (i > 1) cout << "^" << i;
+            first = false;
+        }
+        if (first) cout << "0";
+        cout << endl;
+    }
 };
 
-int compareX(const void *a, const void *b) {
-    struct Point *p = (struct Point *)a;
-    struct Point *q = (struct Point *)b;
-
-    if (p->x < q->x) return -1;
-    if (p->x > q->x) return 1;
-    if (p->y < q->y) return -1;
-    if (p->y > q->y) return 1;
-    return 0;
-}
-
-int compareY(const void *a, const void *b) {
-    struct Point *p = (struct Point *)a;
-    struct Point *q = (struct Point *)b;
-
-    if (p->y < q->y) return -1;
-    if (p->y > q->y) return 1;
-    return 0;
-}
-
-double distance(struct Point p1, struct Point p2) {
-    double dx = p1.x - p2.x;
-    double dy = p1.y - p2.y;
-
-    return sqrt(dx * dx + dy * dy);
-}
-
-double bruteForce(struct Point p[], int left, int right) {
-    double minDist = INFINITY;
-    int i, j;
-
-    for (i = left; i <= right; i++) {
-        for (j = i + 1; j <= right; j++) {
-            double d = distance(p[i], p[j]);
-
-            if (d < minDist)
-                minDist = d;
-        }
-    }
-
-    return minDist;
-}
-
-double closestPair(struct Point p[], int left, int right) {
-    int n = right - left + 1;
-
-    if (n <= 3)
-        return bruteForce(p, left, right);
-
-    int mid = left + (right - left) / 2;
-    double midX = p[mid].x;
-
-    double d1 = closestPair(p, left, mid);
-    double d2 = closestPair(p, mid + 1, right);
-
-    double minDist = (d1 < d2) ? d1 : d2;
-
-    struct Point strip[MAX];
-    int count = 0;
-    int i, j;
-
-    for (i = left; i <= right; i++) {
-        if (fabs(p[i].x - midX) < minDist)
-            strip[count++] = p[i];
-    }
-
-    qsort(strip, count, sizeof(struct Point), compareY);
-
-    for (i = 0; i < count; i++) {
-        for (j = i + 1; j < count; j++) {
-            if (strip[j].y - strip[i].y >= minDist)
-                break;
-
-            double d = distance(strip[i], strip[j]);
-
-            if (d < minDist)
-                minDist = d;
-        }
-    }
-
-    return minDist;
-}
-
 int main() {
-    struct Point p[MAX];
-    int n, i;
+    Polynomial<int> p({5, 2, 3});
+    Polynomial<int> q({1, 4});
+    cout << "P(x) = ";
+    p.display();
+    cout << "Q(x) = ";
+    q.display();
+    cout << "Addition: ";
+    (p + q).display();
+    cout << "Subtraction: ";
+    (p - q).display();
+    cout << "Multiplication: ";
+    (p * q).display();
+    cout << "P(2) = " << p.evaluate(2) << endl;
 
-    printf("Enter number of points: ");
-    scanf("%d", &n);
-
-    if (n < 2 || n > MAX) {
-        printf("Enter between 2 and %d points.\n", MAX);
-        return 1;
-    }
-
-    printf("Enter x and y coordinates of each point:\n");
-
-    for (i = 0; i < n; i++) {
-        scanf("%lf %lf", &p[i].x, &p[i].y);
-    }
-
-    qsort(p, n, sizeof(struct Point), compareX);
-
-    double result = closestPair(p, 0, n - 1);
-
-    printf("Minimum distance = %.4f\n", result);
+    Polynomial<double> r({5.5, 2.5, 3.5});
+    cout << "Floating polynomial: ";
+    r.display();
+    cout << "R(2) = " << r.evaluate(2.0) << endl;
 
     return 0;
 }
-
