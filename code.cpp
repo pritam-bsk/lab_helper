@@ -300,3 +300,81 @@ int main() {
 
     return 0;
 }
+
+
+
+#include <stdio.h>
+
+struct Item {
+    int weight;
+    int profit;
+    float ratio;
+};
+
+int main() {
+    int n, capacity;
+    float totalProfit = 0;
+
+    struct Item item[100], temp;
+
+    printf("Enter number of items: ");
+    scanf("%d", &n);
+
+    printf("Enter knapsack capacity: ");
+    scanf("%d", &capacity);
+
+    // Input weight and profit
+    for (int i = 0; i < n; i++) {
+        printf("Enter weight and profit of item %d: ", i + 1);
+        scanf("%d %d", &item[i].weight,
+                        &item[i].profit);
+
+        item[i].ratio =
+            (float)item[i].profit / item[i].weight;
+    }
+
+    // Sort items by profit/weight ratio
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = i + 1; j < n; j++) {
+
+            if (item[i].ratio < item[j].ratio) {
+                temp = item[i];
+                item[i] = item[j];
+                item[j] = temp;
+            }
+        }
+    }
+
+    // Greedy selection
+    for (int i = 0; i < n; i++) {
+
+        if (capacity == 0)
+            break;
+
+        if (item[i].weight <= capacity) {
+
+            // Take the complete item
+            capacity -= item[i].weight;
+            totalProfit += item[i].profit;
+
+            printf("Taken full item: %d\n", i + 1);
+        }
+        else {
+
+            // Take fractional part
+            float fraction =
+                (float)capacity / item[i].weight;
+
+            totalProfit += item[i].profit * fraction;
+
+            printf("Taken fraction of item %d: %.2f\n",
+                   i + 1, fraction);
+
+            capacity = 0;
+        }
+    }
+
+    printf("\nMaximum Profit = %.2f\n", totalProfit);
+
+    return 0;
+}
