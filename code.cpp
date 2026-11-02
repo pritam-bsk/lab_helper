@@ -378,3 +378,288 @@ int main() {
 
     return 0;
 }
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Structure of AVL Tree node
+struct Node {
+    int key;
+    struct Node *left;
+    struct Node *right;
+    int height;
+};
+
+// Find height of node
+int height(struct Node *n) {
+    if (n == NULL)
+        return 0;
+
+    return n->height;
+}
+
+// Find maximum of two numbers
+int max(int a, int b) {
+    return (a > b) ? a : b;
+}
+
+// Create a new node
+struct Node* newNode(int key) {
+    struct Node* node =
+        (struct Node*)malloc(sizeof(struct Node));
+
+    node->key = key;
+    node->left = NULL;
+    node->right = NULL;
+    node->height = 1;
+
+    return node;
+}
+
+// Calculate balance factor
+int getBalance(struct Node *n) {
+    if (n == NULL)
+        return 0;
+
+    return height(n->left) - height(n->right);
+}
+
+// Right rotation (LL case)
+struct Node* rightRotate(struct Node *y) {
+    struct Node *x = y->left;
+    struct Node *T2 = x->right;
+
+    x->right = y;
+    y->left = T2;
+
+    y->height = 1 + max(height(y->left),
+                        height(y->right));
+
+    x->height = 1 + max(height(x->left),
+                        height(x->right));
+
+    return x;
+}
+
+// Left rotation (RR case)
+struct Node* leftRotate(struct Node *x) {
+    struct Node *y = x->right;
+    struct Node *T2 = y->left;
+
+    y->left = x;
+    x->right = T2;
+
+    x->height = 1 + max(height(x->left),
+                        height(x->right));
+
+    y->height = 1 + max(height(y->left),
+                        height(y->right));
+
+    return y;
+}
+
+// Insert a node
+struct Node* insert(struct Node* node, int key) {
+
+    // Normal BST insertion
+    if (node == NULL)
+        return newNode(key);
+
+    if (key < node->key)
+        node->left = insert(node->left, key);
+
+    else if (key > node->key)
+        node->right = insert(node->right, key);
+
+    else
+        return node;
+
+    // Update height
+    node->height = 1 + max(height(node->left),
+                           height(node->right));
+
+    // Find balance factor
+    int balance = getBalance(node);
+
+    // LL Case
+    if (balance > 1 && key < node->left->key)
+        return rightRotate(node);
+
+    // RR Case
+    if (balance < -1 && key > node->right->key)
+        return leftRotate(node);
+
+    // LR Case
+    if (balance > 1 && key > node->left->key) {
+        node->left = leftRotate(node->left);
+        return rightRotate(node);
+    }
+
+    // RL Case
+    if (balance < -1 && key < node->right->key) {
+        node->right = rightRotate(node->right);
+        return leftRotate(node);
+    }
+
+    return node;
+}
+
+// Find minimum value node
+struct Node* minValueNode(struct Node* node) {
+    struct Node* current = node;
+
+    while (current->left != NULL)
+        current = current->left;
+
+    return current;
+}
+
+// Delete a node
+struct Node* deleteNode(struct Node* root, int key) {
+
+    // Normal BST deletion
+    if (root == NULL)
+        return root;
+
+    if (key < root->key)
+        root->left = deleteNode(root->left, key);
+
+    else if (key > root->key)
+        root->right = deleteNode(root->right, key);
+
+    else {
+
+        // Node with zero or one child
+        if (root->left == NULL ||
+            root->right == NULL) {
+
+            struct Node *temp = root->left ?
+                                root->left : root->right;
+
+            // No child
+            if (temp == NULL) {
+                temp = root;
+                root = NULL;
+            }
+            // One child
+            else {
+                *root = *temp;
+            }
+
+            free(temp);
+        }
+
+        // Node with two children
+        else {
+            struct Node* temp =
+                minValueNode(root->right);
+
+            root->key = temp->key;
+
+            root->right =
+                deleteNode(root->right, temp->key);
+        }
+    }
+
+    // If tree becomes empty
+    if (root == NULL)
+        return root;
+
+    // Update height
+    root->height = 1 + max(height(root->left),
+                           height(root->right));
+
+    // Calculate balance factor
+    int balance = getBalance(root);
+
+    // LL Case
+    if (balance > 1 &&
+        getBalance(root->left) >= 0)
+        return rightRotate(root);
+
+    // LR Case
+    if (balance > 1 &&
+        getBalance(root->left) < 0) {
+
+        root->left = leftRotate(root->left);
+        return rightRotate(root);
+    }
+
+    // RR Case
+    if (balance < -1 &&
+        getBalance(root->right) <= 0)
+        return leftRotate(root);
+
+    // RL Case
+    if (balance < -1 &&
+        getBalance(root->right) > 0) {
+
+        root->right = rightRotate(root->right);
+        return leftRotate(root);
+    }
+
+    return root;
+}
+
+// Inorder traversal
+void inorder(struct Node* root) {
+    if (root != NULL) {
+        inorder(root->left);
+        printf("%d ", root->key);
+        inorder(root->right);
+    }
+}
+
+// Main function
+int main() {
+    struct Node* root = NULL;
+    int choice, key;
+
+    while (1) {
+
+        printf("\n\n--- AVL TREE MENU ---\n");
+        printf("1. Insert\n");
+        printf("2. Delete\n");
+        printf("3. Display\n");
+        printf("4. Exit\n");
+
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+
+            case 1:
+                printf("Enter value to insert: ");
+                scanf("%d", &key);
+
+                root = insert(root, key);
+
+                printf("Node inserted successfully.\n");
+                break;
+
+            case 2:
+                printf("Enter value to delete: ");
+                scanf("%d", &key);
+
+                root = deleteNode(root, key);
+
+                printf("Deletion operation completed.\n");
+                break;
+
+            case 3:
+                printf("Inorder Traversal: ");
+                inorder(root);
+                printf("\n");
+                break;
+
+            case 4:
+                return 0;
+
+            default:
+                printf("Invalid choice.\n");
+        }
+    }
+
+    return 0;
+}
